@@ -175,7 +175,7 @@ class ExcelUploadController extends Controller
 
     public function formdata(Request $request)
     {
-        dd($request->all());
+        // dd($request->all());
         $eye_examination_id = $request->eye_examination_id;
         $validator = Validator::make($request->all(), [
             // 'menu_name' => 'required|string|max:255',
@@ -196,6 +196,7 @@ class ExcelUploadController extends Controller
             // $eyedet = $eyedet->save();
 
             $eyedetins = new EyeExaminationDetail();
+            $eyedetins->eye_examination_id = $request->input('eye_examination_id');
             $eyedetins->type_of_correction_cylinder_r = $request->input('n_type_of_correction_cylinder_r');
             $eyedetins->type_of_correction_axis_r = $request->input('n_type_of_correction_axis_r');
             $eyedetins->type_of_correction_spherical_r = $request->input('n_type_of_correction_spherical_r');
@@ -206,9 +207,10 @@ class ExcelUploadController extends Controller
             $eyedetins->type_of_error_l = $request->input('n_type_of_error_l');
             $eyedetins->other_eye_conditions_r = $request->input('other_eye_conditions_r');
             $eyedetins->other_eye_conditions_l = $request->input('other_eye_conditions_l');
-
             $eyedetins->refrective_error = $request->input('n_refrective_error');
+
             $eyedetins->change_of_ref_status = $request->input('n_change_of_ref_status');
+
             $eyedetins->using_screen = $request->input('n_using_screen');
             $eyedetins->watching_time = $request->input('n_watching_time');
             $eyedetins->covid_infected = $request->input('n_covid_infected');
@@ -216,7 +218,7 @@ class ExcelUploadController extends Controller
             $eyedetins->final_action_taken = $request->input('n_final_action_taken');
             $eyedetins->status = 2;
 
-            // $query = $eyedetins->save();
+            $query = $eyedetins->save();
 
             if (!$query) {
                 return response()->json(['code' => 0, 'msg' => 'Something went wrong']);

@@ -110,4 +110,11 @@ return [
         6 => 'Medicine with Glass'
     ],
 
+    // Q9 Customize Area
+    'area' => [
+        1 => 'Urban',
+        2 => 'Sub-urban',
+        3 => 'Rural',
+    ],
+
 ];

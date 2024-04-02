@@ -74,8 +74,6 @@
                                         <tr>
                                             <th>Vision Information (Right)</th>
                                             <th>Vision Information (Left)</th>
-                                            <th>Corrected Vision (Right)</th>
-                                            <th>Corrected Vision (Left)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -100,26 +98,7 @@
                                                     @endforeach
                                                 </select>
                                             </td>
-                                            <td>
-                                                <select class="form-select" id="dropdown1" name="corrected_vision_r">
-                                                    <option value="">Select Option</option>
-                                                    @foreach ($researchConfig['visioninfo'] as $key => $value)
-                                                        <option value="{{ $key }}"
-                                                            {{ $med_data->corrected_vision_r == $key ? 'selected' : '' }}>
-                                                            {{ $value }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <select class="form-select" id="dropdown1" name="corrected_vision_l">
-                                                    <option value="">Select Option</option>
-                                                    @foreach ($researchConfig['visioninfo'] as $key => $value)
-                                                        <option value="{{ $key }}"
-                                                            {{ $med_data->corrected_vision_l == $key ? 'selected' : '' }}>
-                                                            {{ $value }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </td>
+
                                         </tr>
                                     </tbody>
                                 </table>
@@ -145,6 +124,7 @@
                                 <th>DSPH</th>
                                 <th>DCYL</th>
                                 <th>AXIS</th>
+                                <th>VISION</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -155,6 +135,14 @@
                                         value="{{ $med_data->type_of_correction_cylinder_r ?? '' }}"></td>
                                 <td><input type="text" class="form-control" name="type_of_correction_axis_r"
                                         value="{{ $med_data->type_of_correction_axis_r ?? '' }}"></td>
+                                <td><select class="form-select" id="dropdown1" name="vision_information_r">
+                                    <option value="">Select Option</option>
+                                    @foreach ($researchConfig['visioninfo'] as $key => $value)
+                                        <option value="{{ $key }}"
+                                            {{ $med_data->vision_information_r == $key ? 'selected' : '' }}>
+                                            {{ $value }}</option>
+                                    @endforeach
+                                </select></td>
                             </tr>
                         </tbody>
                     </table>
@@ -162,13 +150,14 @@
 
                 <div class="col-md-6">
                     <h3>Left Eye</h3>
-                    <input type="date" class="form-control" name="before_date">
+                    <input type="date" class="form-control" name="before_date" disabled>
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>DSPH</th>
                                 <th>DCYL</th>
                                 <th>AXIS</th>
+                                <th>VISION</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -181,6 +170,14 @@
                                 </td>
                                 <td><input type="text" class="form-control" name="type_of_correction_axis_l"
                                         value="{{ $med_data->type_of_correction_axis_l ?? '' }}"></td>
+                                <td><select class="form-select" id="dropdown1" name="corrected_vision_l">
+                                    <option value="">Select Option</option>
+                                    @foreach ($researchConfig['visioninfo'] as $key => $value)
+                                        <option value="{{ $key }}"
+                                            {{ $med_data->corrected_vision_l == $key ? 'selected' : '' }}>
+                                            {{ $value }}</option>
+                                    @endforeach
+                                </select></td>
                             </tr>
                         </tbody>
                     </table>
@@ -191,12 +188,14 @@
             <div class="row mt-4" style="background-color: #ccffc8">
                 <div class="col-md-6">
                     <h3>Right Eye</h3>
+                    <input type="date" class="form-control" name="after_date">
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>DSPH</th>
                                 <th>DCYL</th>
                                 <th>AXIS</th>
+                                <th>VISION</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -204,6 +203,13 @@
                                 <td><input type="text" class="form-control" name="n_type_of_correction_spherical_r" value=""></td>
                                 <td><input type="text" class="form-control" name="n_type_of_correction_cylinder_r" value=""></td>
                                 <td><input type="text" class="form-control" name="n_type_of_correction_axis_r" value=""></td>
+                                <td><select class="form-select" id="dropdown1" name="n_corrected_vision_r">
+                                    <option value="">Select Option</option>
+                                    @foreach ($researchConfig['visioninfo'] as $key => $value)
+                                        <option value="{{ $key }}">
+                                            {{ $value }}</option>
+                                    @endforeach
+                                </select></td>
                             </tr>
                         </tbody>
                     </table>
@@ -211,12 +217,14 @@
 
                 <div class="col-md-6">
                     <h3>Left Eye</h3>
+                    <input type="date" class="form-control" name="" disabled>
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>DSPH</th>
                                 <th>DCYL</th>
                                 <th>AXIS</th>
+                                <th>VISION</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -226,6 +234,13 @@
                                 <td><input type="text" class="form-control" name="n_type_of_correction_cylinder_l" value="">
                                 </td>
                                 <td><input type="text" class="form-control" name="n_type_of_correction_axis_l" value=""></td>
+                                <td><select class="form-select" id="dropdown1" name="n_corrected_vision_l">
+                                    <option value="">Select Option</option>
+                                    @foreach ($researchConfig['visioninfo'] as $key => $value)
+                                        <option value="{{ $key }}">
+                                            {{ $value }}</option>
+                                    @endforeach
+                                </select></td>
                             </tr>
                         </tbody>
                     </table>
@@ -367,6 +382,18 @@
                                     @foreach ($researchConfig['conclusion'] as $key => $value)
                                         <option value="{{ $key }}"
                                             {{ $med_data->final_action_taken == $key ? 'selected' : '' }}>
+                                            {{ $value }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="dropdown8" class="form-label font-weight-bold">Area</label>
+                                <select class="form-select" id="dropdown8" name="area">
+                                    <option value="">Select Option</option>
+                                    @foreach ($researchConfig['area'] as $key => $value)
+                                        <option value="{{ $key }}">
                                             {{ $value }}</option>
                                     @endforeach
                                 </select>
