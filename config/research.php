@@ -165,7 +165,7 @@ return [
         74 => 'PER GENDARIA GPS -1',
         93 => 'WEST DHANMONDI YOUSUF SCHOOL -1',
         107 => 'SHAHANURI MODEL HIGH SCHOOL -1',
-        78 => 'PREMIAR SCHOOL -1'ss
+        78 => 'PREMIAR SCHOOL -1'
     ],
 
 ];
