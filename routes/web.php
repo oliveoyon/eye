@@ -14,9 +14,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+
+Route::get('/', [ExcelUploadController::class, 'index'])->name('index');
+
 
 Route::get('/upload', [ExcelUploadController::class, 'showUploadForm'])->name('upload.form');
 Route::post('/upload', [ExcelUploadController::class, 'upload'])->name('upload');
