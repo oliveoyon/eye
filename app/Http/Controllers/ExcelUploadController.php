@@ -7,6 +7,7 @@ use App\Models\EyeExaminationDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -160,9 +161,8 @@ class ExcelUploadController extends Controller
     public function index(Request $request)
     {
         $students = EyeExamination::where('status', 1)->paginate(100); // Change 100 to the desired number of records per page
-        count($students);
-        // dd($students);
-        return view('patient-list', compact('students'));
+        $researchConfig = Config::get('research');
+        return view('patient-list', compact('students', 'researchConfig'));
     }
 
     public function details($id)
@@ -177,6 +177,7 @@ class ExcelUploadController extends Controller
     {
         // dd($request->all());
         $eye_examination_id = $request->eye_examination_id;
+        $id = $request->first_table;
         $validator = Validator::make($request->all(), [
             // 'menu_name' => 'required|string|max:255',
 
@@ -186,6 +187,10 @@ class ExcelUploadController extends Controller
             return response()->json(['code' => 0, 'error' => $validator->errors()->toArray()]);
         } else {
 
+            $first_table = EyeExamination::find($id);
+            $first_table->status = 2;
+            $first_table->save();
+
             $eyedet = EyeExaminationDetail::find($eye_examination_id);
             $eyedet->type_of_correction_spherical_r = $request->input('type_of_correction_spherical_r');
             $eyedet->type_of_correction_cylinder_r = $request->input('type_of_correction_cylinder_r');
@@ -193,7 +198,8 @@ class ExcelUploadController extends Controller
             $eyedet->type_of_correction_spherical_l = $request->input('type_of_correction_spherical_l');
             $eyedet->type_of_correction_cylinder_l = $request->input('type_of_correction_cylinder_l');
             $eyedet->type_of_correction_axis_l = $request->input('type_of_correction_axis_l');
-            // $eyedet = $eyedet->save();
+            $eyedet->status = 2;
+            $eyedet = $eyedet->save();
 
             $eyedetins = new EyeExaminationDetail();
             $eyedetins->eye_examination_id = $request->input('eye_examination_id');
@@ -207,15 +213,20 @@ class ExcelUploadController extends Controller
             $eyedetins->type_of_error_l = $request->input('n_type_of_error_l');
             $eyedetins->other_eye_conditions_r = $request->input('other_eye_conditions_r');
             $eyedetins->other_eye_conditions_l = $request->input('other_eye_conditions_l');
-            $eyedetins->refrective_error = $request->input('n_refrective_error');
 
-            $eyedetins->change_of_ref_status = $request->input('n_change_of_ref_status');
+            $eyedetins->refrective_error_r = $request->input('n_refrective_error_r');
+            $eyedetins->refrective_error_l = $request->input('n_refrective_error_l');
+            $eyedetins->change_of_ref_status_r = $request->input('n_change_of_ref_status_r');
+            $eyedetins->change_of_ref_status_l = $request->input('n_change_of_ref_status_l');
+            $eyedetins->after_date = $request->input('after_date');
+            $eyedetins->before_date = $request->input('before_date');
 
             $eyedetins->using_screen = $request->input('n_using_screen');
             $eyedetins->watching_time = $request->input('n_watching_time');
             $eyedetins->covid_infected = $request->input('n_covid_infected');
             $eyedetins->eye_prob_online = $request->input('n_eye_prob_online');
             $eyedetins->final_action_taken = $request->input('n_final_action_taken');
+            $eyedetins->area = $request->input('area');
             $eyedetins->status = 2;
 
             $query = $eyedetins->save();
@@ -223,7 +234,8 @@ class ExcelUploadController extends Controller
             if (!$query) {
                 return response()->json(['code' => 0, 'msg' => 'Something went wrong']);
             } else {
-                return response()->json(['code' => 1, 'msg' => 'Menu has been successfully saved', 'redirect' => 'admin/menu-list']);
+                Session::flash('success', 'Data Successfully Updated');
+                return redirect()->route('index');
             }
         }
     }

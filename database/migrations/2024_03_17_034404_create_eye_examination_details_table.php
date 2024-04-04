@@ -34,7 +34,8 @@ return new class extends Migration
             $table->string('final_action_taken')->nullable();
 
 
-            $table->string('refrective_error')->nullable();  //12 yes no
+            $table->string('refrective_error_r')->nullable();  //12 yes no
+            $table->string('refrective_error_l')->nullable();  //12 yes no
             $table->string('using_screen')->nullable();  //18 yes no
             $table->string('watching_time')->nullable();  //19 a) 1-3     b) 4-6     c)7-9
             $table->string('covid_infected')->nullable();  //20 yes no

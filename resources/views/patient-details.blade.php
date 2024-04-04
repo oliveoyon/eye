@@ -43,9 +43,13 @@
         <form action="{{ route('formdata') }}" method="POST" autocomplete="off">
             @csrf
             <input type="hidden" name="eye_examination_id" value="{{ $med_data->id }}">
+            <input type="hidden" name="first_table" value="{{ $data->id }}">
             <div class="row">
-                <div class="col-md-4">
-                    <h3>Student Information</h3>
+                <div class="col-md-8">
+                    @isset($researchConfig['school_name'][$data['school_cluster']])
+                    <h3 style="color: green">{{ $researchConfig['school_name'][$data['school_cluster']] }}</h3>
+                    @endisset
+                    <h4>Student Information</h4>
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong>Name:</strong> {{ $data->student_name }}</p>
@@ -57,6 +61,7 @@
                                 @endisset
                             </p>
 
+
                         </div>
                         <div class="col-md-6">
                             <p><strong>Age:</strong> {{ $data->age }}</p>
@@ -64,7 +69,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-8">
+                <div class="col-md-4">
                     <h3>Vision Information</h3>
                     <div class="row">
                         <div class="col-md-12">
@@ -308,8 +313,19 @@
                         </div>
                         <div class="col-md-3">
                             <div class="mb-3">
-                                <label for="dropdown1" class="form-label font-weight-bold">Refractive Error</label>
-                                <select class="form-select" id="dropdown1" name="n_refrective_error">
+                                <label for="dropdown1" class="form-label font-weight-bold">Refractive Error R</label>
+                                <select class="form-select" id="dropdown1" name="n_refrective_error_r">
+                                    <option value="">Select Option</option>
+                                    @foreach ($researchConfig['refractive_error'] as $key => $value)
+                                    <option value="{{ $key }}">{{ $value }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="dropdown1" class="form-label font-weight-bold">Refractive Error L</label>
+                                <select class="form-select" id="dropdown1" name="n_refrective_error_l">
                                     <option value="">Select Option</option>
                                     @foreach ($researchConfig['refractive_error'] as $key => $value)
                                     <option value="{{ $key }}">{{ $value }}</option>
@@ -320,8 +336,20 @@
                         <div class="col-md-3">
                             <div class="mb-3">
                                 <label for="dropdown3" class="form-label font-weight-bold">Change of Refrective
-                                    Status</label>
-                                <select class="form-select" id="dropdown3" name="n_change_of_ref_status">
+                                    Status R</label>
+                                <select class="form-select" id="dropdown3" name="n_change_of_ref_status_r">
+                                    <option value="">Select Option</option>
+                                    @foreach ($researchConfig['change_of_ref_status'] as $key => $value)
+                                        <option value="{{ $key }}">{{ $value }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="dropdown3" class="form-label font-weight-bold">Change of Refrective
+                                    Status L</label>
+                                <select class="form-select" id="dropdown3" name="n_change_of_ref_status_l">
                                     <option value="">Select Option</option>
                                     @foreach ($researchConfig['change_of_ref_status'] as $key => $value)
                                         <option value="{{ $key }}">{{ $value }}</option>
