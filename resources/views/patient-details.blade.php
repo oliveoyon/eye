@@ -371,7 +371,7 @@
                         <div class="col-md-3">
                             <div class="mb-3">
                                 <label for="dropdown5" class="form-label font-weight-bold">Hour Watching</label>
-                                <select class="form-select" id="dropdown5" name="n_watching_time" required>
+                                <select class="form-select" id="dropdown5" name="n_watching_time">
                                     <option value="">Select Option</option>
                                     @foreach ($researchConfig['watching_time'] as $key => $value)
                                         <option value="{{ $key }}">{{ $value }}</option>
