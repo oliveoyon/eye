@@ -45,7 +45,7 @@
             <input type="hidden" name="eye_examination_id" value="{{ $med_data->id }}">
             <input type="hidden" name="first_table" value="{{ $data->id }}">
             <div class="row">
-                <div class="col-md-8">
+                <div class="col-md-6">
                     @isset($researchConfig['school_name'][$data['school_cluster']])
                     <h3 style="color: green">{{ $researchConfig['school_name'][$data['school_cluster']] }}</h3>
                     @endisset
@@ -69,7 +69,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <h3>Vision Information</h3>
                     <div class="row">
                         <div class="col-md-12">
@@ -79,29 +79,32 @@
                                         <tr>
                                             <th>Vision Information (Right)</th>
                                             <th>Vision Information (Left)</th>
+                                            <th>Corrected Vision (Right)</th>
+                                            <th>Corrected Vision (Left)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
                                             <td>
-                                                <select class="form-select" id="dropdown1" name="vision_information_r">
-                                                    <option value="">Select Option</option>
-                                                    @foreach ($researchConfig['visioninfo'] as $key => $value)
-                                                        <option value="{{ $key }}"
-                                                            {{ $med_data->vision_information_r == $key ? 'selected' : '' }}>
-                                                            {{ $value }}</option>
-                                                    @endforeach
-                                                </select>
+                                                @isset($researchConfig['visioninfo'][$med_data['vision_information_r']])
+                                                {{ $researchConfig['visioninfo'][$med_data['vision_information_r']] }}
+                                                @endisset
                                             </td>
                                             <td>
-                                                <select class="form-select" id="dropdown1" name="vision_information_l">
-                                                    <option value="">Select Option</option>
-                                                    @foreach ($researchConfig['visioninfo'] as $key => $value)
-                                                        <option value="{{ $key }}"
-                                                            {{ $med_data->vision_information_l == $key ? 'selected' : '' }}>
-                                                            {{ $value }}</option>
-                                                    @endforeach
-                                                </select>
+
+                                                @isset($researchConfig['visioninfo'][$med_data['vision_information_l']])
+                                                {{ $researchConfig['visioninfo'][$med_data['vision_information_l']] }}
+                                                @endisset
+                                            </td>
+                                            <td>
+                                                @isset($researchConfig['visioninfo'][$med_data['corrected_vision_r']])
+                                                {{ $researchConfig['visioninfo'][$med_data['corrected_vision_r']] }}
+                                                @endisset
+                                            </td>
+                                            <td>
+                                                @isset($researchConfig['visioninfo'][$med_data['corrected_vision_l']])
+                                                {{ $researchConfig['visioninfo'][$med_data['corrected_vision_l']] }}
+                                                @endisset
                                             </td>
 
                                         </tr>
@@ -140,11 +143,11 @@
                                         value="{{ $med_data->type_of_correction_cylinder_r ?? '' }}"></td>
                                 <td><input type="text" class="form-control" name="type_of_correction_axis_r"
                                         value="{{ $med_data->type_of_correction_axis_r ?? '' }}"></td>
-                                <td><select class="form-select" id="dropdown1" name="vision_information_r">
+                                <td><select class="form-select" id="dropdown1" name="corrected_vision_r">
                                     <option value="">Select Option</option>
                                     @foreach ($researchConfig['visioninfo'] as $key => $value)
                                         <option value="{{ $key }}"
-                                            {{ $med_data->vision_information_r == $key ? 'selected' : '' }}>
+                                            {{ $med_data->corrected_vision_r == $key ? 'selected' : '' }}>
                                             {{ $value }}</option>
                                     @endforeach
                                 </select></td>
@@ -361,7 +364,6 @@
                             <div class="mb-3">
                                 <label for="dropdown4" class="form-label font-weight-bold">Use Mobile</label>
                                 <select class="form-select" id="dropdown4" name="n_using_screen">
-                                    <option value="">Select Option</option>
                                     @foreach ($researchConfig['using_screen'] as $key => $value)
                                         <option value="{{ $key }}">{{ $value }}</option>
                                     @endforeach

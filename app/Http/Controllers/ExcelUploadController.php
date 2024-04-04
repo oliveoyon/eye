@@ -195,9 +195,13 @@ class ExcelUploadController extends Controller
             $eyedet->type_of_correction_spherical_r = $request->input('type_of_correction_spherical_r');
             $eyedet->type_of_correction_cylinder_r = $request->input('type_of_correction_cylinder_r');
             $eyedet->type_of_correction_axis_r = $request->input('type_of_correction_axis_r');
+            $eyedet->corrected_vision_r = $request->input('corrected_vision_r');
             $eyedet->type_of_correction_spherical_l = $request->input('type_of_correction_spherical_l');
             $eyedet->type_of_correction_cylinder_l = $request->input('type_of_correction_cylinder_l');
             $eyedet->type_of_correction_axis_l = $request->input('type_of_correction_axis_l');
+            $eyedet->corrected_vision_l = $request->input('corrected_vision_l');
+            $eyedet->after_date = $request->input('after_date');
+            $eyedet->before_date = $request->input('before_date');
             $eyedet->status = 2;
             $eyedet = $eyedet->save();
 
