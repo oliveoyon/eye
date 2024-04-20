@@ -120,12 +120,18 @@
                 </div>
             </div>
 
+            @php
+                $prevdate = $researchConfig['presc_date'][$data['school_cluster']];
+                $current_date = date('Y-m-d', strtotime('+6 months', strtotime($prevdate)));
+            @endphp
+
 
             <!-- Two Three-column Tables -->
             <div class="row mt-4" style="background-color: #c8e3ff">
                 <div class="col-md-6">
                     <h3>Right Eye</h3>
-                    <input type="date" class="form-control" name="before_date">
+                    <input type="date" class="form-control" name="before_date" value="{{ $prevdate }}">
+
                     <table class="table">
                         <thead>
                             <tr>
@@ -196,7 +202,7 @@
             <div class="row mt-4" style="background-color: #ccffc8">
                 <div class="col-md-6">
                     <h3>Right Eye</h3>
-                    <input type="date" class="form-control" name="after_date">
+                    <input type="date" class="form-control" name="after_date" value="{{ $current_date }}">
                     <table class="table">
                         <thead>
                             <tr>
@@ -212,7 +218,7 @@
                                 <td><input type="text" class="form-control" name="n_type_of_correction_cylinder_r" value=""></td>
                                 <td><input type="text" class="form-control" name="n_type_of_correction_axis_r" value=""></td>
                                 <td><select class="form-select" id="dropdown1" name="n_corrected_vision_r">
-                                    <option value="">Select Option</option>
+
                                     @foreach ($researchConfig['visioninfo'] as $key => $value)
                                         <option value="{{ $key }}">
                                             {{ $value }}</option>
@@ -243,7 +249,7 @@
                                 </td>
                                 <td><input type="text" class="form-control" name="n_type_of_correction_axis_l" value=""></td>
                                 <td><select class="form-select" id="dropdown1" name="n_corrected_vision_l">
-                                    <option value="">Select Option</option>
+
                                     @foreach ($researchConfig['visioninfo'] as $key => $value)
                                         <option value="{{ $key }}">
                                             {{ $value }}</option>
@@ -294,9 +300,7 @@
                                 <select class="form-select" id="dropdown1" name="n_type_of_error_r">
                                     <option value="">Select Option</option>
                                     @foreach ($researchConfig['type_of_error'] as $key => $value)
-                                        <option value="{{ $key }}"
-                                            {{ $med_data->type_of_error_r == $key ? 'selected' : '' }}>
-                                            {{ $value }}</option>
+                                        <option value="{{ $key }}" {{ $key == 1 ? 'selected' : '' }}>{{ $value }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -307,9 +311,7 @@
                                 <select class="form-select" id="dropdown1" name="n_type_of_error_l">
                                     <option value="">Select Option</option>
                                     @foreach ($researchConfig['type_of_error'] as $key => $value)
-                                        <option value="{{ $key }}"
-                                            {{ $med_data->type_of_error_l == $key ? 'selected' : '' }}>
-                                            {{ $value }}</option>
+                                        <option value="{{ $key }}" {{ $key == 1 ? 'selected' : '' }}>{{ $value }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -318,7 +320,7 @@
                             <div class="mb-3">
                                 <label for="dropdown1" class="form-label font-weight-bold">Refractive Error R</label>
                                 <select class="form-select" id="dropdown1" name="n_refrective_error_r">
-                                    <option value="">Select Option</option>
+
                                     @foreach ($researchConfig['refractive_error'] as $key => $value)
                                     <option value="{{ $key }}">{{ $value }}</option>
                                     @endforeach
@@ -329,7 +331,7 @@
                             <div class="mb-3">
                                 <label for="dropdown1" class="form-label font-weight-bold">Refractive Error L</label>
                                 <select class="form-select" id="dropdown1" name="n_refrective_error_l">
-                                    <option value="">Select Option</option>
+
                                     @foreach ($researchConfig['refractive_error'] as $key => $value)
                                     <option value="{{ $key }}">{{ $value }}</option>
                                     @endforeach
@@ -343,7 +345,7 @@
                                 <select class="form-select" id="dropdown3" name="n_change_of_ref_status_r">
                                     <option value="">Select Option</option>
                                     @foreach ($researchConfig['change_of_ref_status'] as $key => $value)
-                                        <option value="{{ $key }}">{{ $value }}</option>
+                                        <option value="{{ $key }}" {{ $key == 2 ? 'selected' : '' }}>{{ $value }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -355,7 +357,7 @@
                                 <select class="form-select" id="dropdown3" name="n_change_of_ref_status_l">
                                     <option value="">Select Option</option>
                                     @foreach ($researchConfig['change_of_ref_status'] as $key => $value)
-                                        <option value="{{ $key }}">{{ $value }}</option>
+                                        <option value="{{ $key }}" {{ $key == 2 ? 'selected' : '' }}>{{ $value }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -374,7 +376,7 @@
                             <div class="mb-3">
                                 <label for="dropdown5" class="form-label font-weight-bold">Hour Watching</label>
                                 <select class="form-select" id="dropdown5" name="n_watching_time">
-                                    <option value="">Select Option</option>
+
                                     @foreach ($researchConfig['watching_time'] as $key => $value)
                                         <option value="{{ $key }}">{{ $value }}</option>
                                     @endforeach
@@ -387,7 +389,7 @@
                                 <select class="form-select" id="dropdown6" name="n_covid_infected">
                                     <option value="">Select Option</option>
                                     @foreach ($researchConfig['covid'] as $key => $value)
-                                        <option value="{{ $key }}">{{ $value }}</option>
+                                        <option value="{{ $key }}" {{ $key == 2 ? 'selected' : '' }}>{{ $value }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -399,7 +401,7 @@
                                 <select class="form-select" id="dropdown7" name="n_eye_prob_online">
                                     <option value="">Select Option</option>
                                     @foreach ($researchConfig['eye_prob_online'] as $key => $value)
-                                        <option value="{{ $key }}">{{ $value }}</option>
+                                        <option value="{{ $key }}" {{ $key == 2 ? 'selected' : '' }}>{{ $value }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -421,7 +423,7 @@
                             <div class="mb-3">
                                 <label for="dropdown8" class="form-label font-weight-bold">Area</label>
                                 <select class="form-select" id="dropdown8" name="area">
-                                    <option value="">Select Option</option>
+
                                     @foreach ($researchConfig['area'] as $key => $value)
                                         <option value="{{ $key }}">
                                             {{ $value }}</option>

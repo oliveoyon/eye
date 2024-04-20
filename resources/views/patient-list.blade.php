@@ -60,7 +60,7 @@
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>SL</th>
+                                        <th>ID</th>
                                         <th>School Name</th>
                                         <th>Student Name</th>
                                         <th>Class</th>
@@ -72,7 +72,7 @@
                                 <tbody>
                                     @foreach ($students as $student)
                                         <tr>
-                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $student->id }}</td>
                                             <td>
                                                 @isset($researchConfig['school_name'][$student->school_cluster])
                                                     {{ $researchConfig['school_name'][$student->school_cluster] }}

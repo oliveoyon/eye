@@ -19,58 +19,6 @@ class ExcelUploadController extends Controller
         return view('upload');
     }
 
-    // public function upload(Request $request)
-    // {
-    //     $request->validate([
-    //         'file' => 'required|mimes:xlsx,xls',
-    //     ]);
-
-    //     $file = $request->file('file');
-
-    //     // Load the Excel file
-    //     $spreadsheet = IOFactory::load($file);
-
-    //     // Get the first worksheet
-    //     $sheet = $spreadsheet->getActiveSheet();
-
-    //     // Iterate through rows (starting from row 2 to skip header)
-    //     foreach ($sheet->getRowIterator(2) as $row) {
-    //         // Extract cell values from the row
-    //         $cells = $row->getCellIterator();
-    //         $rowData = [];
-    //         $skipFirstColumn = true;
-    //         foreach ($cells as $cell) {
-    //             if ($skipFirstColumn) {
-    //                 $skipFirstColumn = false;
-    //                 continue; // Skip the first column
-    //             }
-    //             $rowData[] = $cell->getValue();
-    //         }
-
-    //         // Create EyeExamination record
-    //         EyeExamination::create([
-    //             'region' => $rowData[0],
-    //             'school_cluster' => $rowData[1],
-    //             'name_of_teacher' => $rowData[2],
-    //             'student_id' => $rowData[3],
-    //             'student_name' => $rowData[4],
-    //             'class' => $rowData[5],
-    //             'age' => $rowData[6],
-    //             'sex' => $rowData[7],
-    //             'father_name' => $rowData[8],
-    //             'father_occupation' => $rowData[9],
-    //             'presenting_vision_r' => $rowData[10],
-    //             'presenting_vision_l' => $rowData[11],
-    //             'screening_result' => $rowData[12],
-    //             'eye_conditions_r' => $rowData[13],
-    //             'eye_conditions_l' => $rowData[14],
-    //             'first_action_taken' => $rowData[15],
-    //             // Add mappings for other columns
-    //         ]);
-    //     }
-
-    //     return redirect()->back()->with('success', 'Excel data imported successfully.');
-    // }
 
     public function upload(Request $request)
     {
@@ -158,9 +106,26 @@ class ExcelUploadController extends Controller
         }
     }
 
+    public function deleteRows()
+    {
+        // Find rows in eye_examinations where school_cluster is null
+        $nullSchoolClusterRows = EyeExamination::whereNull('age')->get();
+
+        // Loop through each row and delete corresponding rows
+        foreach ($nullSchoolClusterRows as $row) {
+            // Delete from eye_examination_details first
+            EyeExaminationDetail::where('eye_examination_id', $row->id)->delete();
+
+            // Then delete from eye_examinations
+            $row->delete();
+        }
+
+        return response()->json(['message' => 'Rows deleted successfully']);
+    }
+
     public function index(Request $request)
     {
-        $students = EyeExamination::where('status', 1)->paginate(100); // Change 100 to the desired number of records per page
+        $students = EyeExamination::where('status', 1)->whereNotNull('school_cluster')->paginate(100); // Change 100 to the desired number of records per page
         $researchConfig = Config::get('research');
         return view('patient-list', compact('students', 'researchConfig'));
     }
@@ -213,6 +178,8 @@ class ExcelUploadController extends Controller
             $eyedetins->type_of_correction_spherical_l = $request->input('n_type_of_correction_spherical_l');
             $eyedetins->type_of_correction_cylinder_l = $request->input('n_type_of_correction_cylinder_l');
             $eyedetins->type_of_correction_axis_l = $request->input('n_type_of_correction_axis_l');
+            $eyedetins->corrected_vision_r = $request->input('n_corrected_vision_r');
+            $eyedetins->corrected_vision_l = $request->input('n_corrected_vision_l');
             $eyedetins->type_of_error_r = $request->input('n_type_of_error_r');
             $eyedetins->type_of_error_l = $request->input('n_type_of_error_l');
             $eyedetins->other_eye_conditions_r = $request->input('other_eye_conditions_r');
@@ -243,4 +210,333 @@ class ExcelUploadController extends Controller
             }
         }
     }
+
+    // General Gender wise data
+    public function getGenderDistribution()
+    {
+        $studentsData = EyeExaminationDetail::join('eye_examinations', 'eye_examination_details.eye_examination_id', '=', 'eye_examinations.id')
+            ->whereNotNull('eye_examination_details.area')
+            ->select(
+                'eye_examination_details.area',
+                DB::raw('SUM(CASE WHEN eye_examinations.sex = 1 THEN 1 ELSE 0 END) AS male_students'),
+                DB::raw('SUM(CASE WHEN eye_examinations.sex = 2 THEN 1 ELSE 0 END) AS female_students'),
+                DB::raw('SUM(CASE WHEN eye_examinations.sex = 3 THEN 1 ELSE 0 END) AS other_students')
+            )
+            ->groupBy('eye_examination_details.area')
+            ->get();
+
+        return view('area', compact('studentsData'));
+    }
+
+    // Uncorrected vision information by age for left right
+    public function visionInfoTable()
+    {
+        // Get distinct age groups
+        $ageGroups = EyeExamination::select(
+            'eye_examinations.age',
+            'eye_examination_details.vision_information_l',
+            DB::raw('COUNT(*) AS count')
+        )
+            ->join('eye_examination_details', 'eye_examinations.id', '=', 'eye_examination_details.eye_examination_id')
+            ->whereNotNull('eye_examinations.school_cluster')
+            ->groupBy('eye_examinations.age', 'eye_examination_details.vision_information_l');
+
+        // Count the number of rows considered for the query
+        $rowCount = $ageGroups->count();
+
+        // Get the grouped data
+        $ageGroups = $ageGroups->orderBy('eye_examinations.age')
+            ->get()
+            ->groupBy('age');
+
+        // Calculate percentage for each age group
+        foreach ($ageGroups as &$group) {
+            $total = $group->sum('count');
+            $group->map(function ($item) use ($total) {
+                $item->percentage = ($item->count / $total) * 100;
+                return $item;
+            });
+        }
+
+        // $totalCount = EyeExamination::whereNotNull('school_cluster')->count();
+        $totalCount = EyeExaminationDetail::whereNotNull('area')->count();
+        // echo $rowCount; exit;
+
+        return view('uncorrected', compact('ageGroups', 'totalCount'));
+    }
+
+    // Uncorrected vision information by sex for left right
+    public function visionInfoTablebySex()
+    {
+        // Get distinct gender groups
+        $genderGroups = EyeExamination::select(
+            'eye_examinations.sex',
+            'eye_examination_details.vision_information_l',
+            DB::raw('COUNT(*) AS count')
+        )
+            ->join('eye_examination_details', 'eye_examinations.id', '=', 'eye_examination_details.eye_examination_id')
+            ->whereNotNull('eye_examinations.school_cluster')
+            ->groupBy('eye_examinations.sex', 'eye_examination_details.vision_information_l');
+
+        // Count the number of rows considered for the query
+        $rowCount = $genderGroups->count();
+
+        // Get the grouped data
+        $genderGroups = $genderGroups->orderBy('eye_examinations.sex')
+            ->get()
+            ->groupBy('sex');
+
+        // Calculate percentage for each gender group
+        foreach ($genderGroups as &$group) {
+            $total = $group->sum('count');
+            $group->map(function ($item) use ($total) {
+                $item->percentage = ($item->count / $total) * 100;
+                return $item;
+            });
+        }
+
+        // Total count of records with non-null area
+        $totalCount = EyeExaminationDetail::whereNotNull('area')->count();
+
+        return view('visioninfosex', compact('genderGroups', 'totalCount'));
+    }
+
+
+    // ///////////////////////////////////
+    public function correctedVisionData()
+    {
+        // Query to get corrected_vision_l data for before six months
+        $beforeSixMonthsData = EyeExamination::select(
+            'eye_examination_details.corrected_vision_l',
+            DB::raw('COUNT(*) AS count')
+        )
+            ->join('eye_examination_details', 'eye_examinations.id', '=', 'eye_examination_details.eye_examination_id')
+            ->whereNull('eye_examination_details.area') // Before six months
+            // ->where('eye_examinations.sex', 2)
+            ->groupBy('eye_examination_details.corrected_vision_l');
+
+        // Query to get corrected_vision_l data for after six months
+        $afterSixMonthsData = EyeExamination::select(
+            'eye_examination_details.corrected_vision_l',
+            DB::raw('COUNT(*) AS count')
+        )
+            ->join('eye_examination_details', 'eye_examinations.id', '=', 'eye_examination_details.eye_examination_id')
+            ->whereNotNull('eye_examination_details.area') // After six months
+            // ->where('eye_examinations.sex', 2)
+            ->groupBy('eye_examination_details.corrected_vision_l');
+
+        // Execute queries and get the results
+        $beforeSixMonthsResults = $beforeSixMonthsData->get();
+        $afterSixMonthsResults = $afterSixMonthsData->get();
+
+        // Combine the results into a single array
+        $combinedResults = $this->combineResults($beforeSixMonthsResults, $afterSixMonthsResults);
+
+        // Calculate the total count for each corrected_vision_l category
+        $totalCount = $this->getTotalCount($combinedResults);
+
+        // Calculate the percentage for each corrected_vision_l category
+        foreach ($combinedResults as &$result) {
+            $result->percentage = ($result->count / $totalCount) * 100;
+        }
+
+        // Return the combined results
+        return $combinedResults;
+    }
+
+    // Helper function to combine the results
+    private function combineResults($beforeResults, $afterResults)
+    {
+        $combinedResults = [];
+
+        // Combine the results based on corrected_vision_l category
+        foreach ($beforeResults as $beforeResult) {
+            $category = $beforeResult->corrected_vision_l;
+            $combinedResults[$category] = (object) [
+                'corrected_vision_l' => $category,
+                'before_six_months' => $beforeResult->count,
+                'after_six_months' => 0, // Initialize after six months count to 0
+                'count' => $beforeResult->count, // Add count property
+            ];
+        }
+
+        // Add after six months count to the combined results
+        foreach ($afterResults as $afterResult) {
+            $category = $afterResult->corrected_vision_l;
+            if (isset($combinedResults[$category])) {
+                $combinedResults[$category]->after_six_months = $afterResult->count;
+            } else {
+                $combinedResults[$category] = (object) [
+                    'corrected_vision_l' => $category,
+                    'before_six_months' => 0, // Initialize before six months count to 0
+                    'after_six_months' => $afterResult->count,
+                    'count' => $afterResult->count, // Add count property
+                ];
+            }
+        }
+
+        // Sort the combined results by corrected_vision_l category
+        ksort($combinedResults);
+
+        return $combinedResults;
+    }
+
+    // Helper function to calculate total count
+    private function getTotalCount($results)
+    {
+        $totalCount = 0;
+        foreach ($results as $result) {
+            $totalCount += $result->count;
+        }
+        return $totalCount;
+    }
+
+    public function showCorrectedVisionData()
+    {
+        $data = $this->correctedVisionData();
+
+        // Ensure that each result has the 'count' property
+        foreach ($data as $result) {
+            if (!isset($result->count)) {
+                $result->count = 0;
+            }
+        }
+
+        return view('correctedvision', compact('data'));
+    }
+
+    // ///////////////////// Relationship between sex and refractive status
+    public function typeOfErrorData()
+    {
+        $typeOfErrorData = EyeExamination::select(
+            'ed.type_of_error_r',
+            'ee.sex',
+            DB::raw('COUNT(*) AS count')
+        )
+            ->join('eye_examination_details as ed', 'ed.eye_examination_id', '=', 'eye_examinations.id')
+            ->join('eye_examinations as ee', 'ee.id', '=', 'ed.eye_examination_id')
+            ->whereNotNull('ed.area') // Filter where area is not null
+            ->groupBy('ed.type_of_error_r', 'ee.sex')
+            ->get();
+
+        // Combine with the type_of_error array for display
+        $typeOfErrorLabels = config('research.type_of_error');
+        $data = [];
+        foreach ($typeOfErrorLabels as $key => $label) {
+            $maleCount = $typeOfErrorData->where('type_of_error_r', $key)->where('sex', 1)->sum('count');
+            $femaleCount = $typeOfErrorData->where('type_of_error_r', $key)->where('sex', 2)->sum('count');
+            $data[] = [
+                'type' => $label,
+                'male' => $maleCount,
+                'female' => $femaleCount,
+            ];
+        }
+
+        return view('typeoferror', compact('data'));
+    }
+
+    public function typeOfErrorAgeData()
+{
+    // Get distinct age groups
+    $distinctAgeGroups = EyeExamination::select('age')
+        ->whereNotNull('age') // Ensure age is not null
+        ->distinct()
+        ->pluck('age')
+        ->sort()
+        ->toArray();
+
+    $typeOfErrorAgeData = EyeExamination::select(
+            'ed.type_of_error_r',
+            'ee.age',
+            'ee.sex',
+            DB::raw('COUNT(*) AS count')
+        )
+        ->join('eye_examination_details as ed', 'ed.eye_examination_id', '=', 'eye_examinations.id')
+        ->join('eye_examinations as ee', 'ee.id', '=', 'ed.eye_examination_id')
+        ->whereNotNull('ed.area') // Filter where area is not null
+        ->whereNotNull('ee.age') // Ensure age is not null
+        ->groupBy('ed.type_of_error_r', 'ee.age', 'ee.sex')
+        ->get();
+
+    // Combine with the type_of_error array for display
+    $typeOfErrorLabels = config('research.type_of_error');
+    $data = [];
+    foreach ($typeOfErrorLabels as $key => $label) {
+        $typeData = [];
+        foreach ([1, 2] as $sex) {
+            $sexData = [];
+            foreach ($distinctAgeGroups as $age) {
+                $count = $typeOfErrorAgeData
+                    ->where('type_of_error_r', $key)
+                    ->where('sex', $sex)
+                    ->where('age', $age)
+                    ->sum('count');
+                $sexData[] = $count;
+            }
+            $typeData[] = [
+                'sex' => $sex == 1 ? 'Male' : 'Female',
+                'counts' => $sexData,
+            ];
+        }
+        $data[] = [
+            'type' => $label,
+            'age_groups' => $distinctAgeGroups,
+            'data' => $typeData,
+        ];
+    }
+
+    return view('type_of_error_age', compact('data'));
+}
+
+// //////// Spherical by age
+
+ public function sphericalPowerByAge()
+{
+    // Query to get spherical power data for before six months
+    $beforeSixMonthsData = EyeExamination::select(
+        'ed.type_of_correction_spherical_r',
+        'ee.age',
+        DB::raw('COUNT(*) AS count')
+    )
+        ->join('eye_examination_details as ed', 'ed.eye_examination_id', '=', 'eye_examinations.id')
+        ->join('eye_examinations as ee', 'ee.id', '=', 'ed.eye_examination_id')
+        ->whereNull('ed.area') // Before six months
+        ->groupBy('ed.type_of_correction_spherical_r', 'ee.age');
+
+    // Query to get spherical power data for after six months
+    $afterSixMonthsData = EyeExamination::select(
+        'ed.type_of_correction_spherical_r',
+        'ee.age',
+        DB::raw('COUNT(*) AS count')
+    )
+        ->join('eye_examination_details as ed', 'ed.eye_examination_id', '=', 'eye_examinations.id')
+        ->join('eye_examinations as ee', 'ee.id', '=', 'ed.eye_examination_id')
+        ->whereNotNull('ed.area') // After six months
+        ->groupBy('ed.type_of_correction_spherical_r', 'ee.age');
+
+    // Combine the results into a single array
+    $combinedResults = [];
+
+    // Fetch and combine the results for before six months
+    $beforeSixMonthsResults = $beforeSixMonthsData->get();
+    foreach ($beforeSixMonthsResults as $result) {
+        $combinedResults[$result->type_of_correction_spherical_r][$result->age]['before_six_months'] = $result->count;
+    }
+
+    // Fetch and combine the results for after six months
+    $afterSixMonthsResults = $afterSixMonthsData->get();
+    foreach ($afterSixMonthsResults as $result) {
+        $combinedResults[$result->type_of_correction_spherical_r][$result->age]['after_six_months'] = $result->count;
+    }
+
+    // Return the combined results
+    return view('spherical_power_by_age', compact('combinedResults'));
+}
+
+
+
+
+
+
+
 }
